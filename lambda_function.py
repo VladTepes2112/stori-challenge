@@ -1,28 +1,30 @@
 import json
-import boto3
+from src import transaction_processor
 
 def lambda_handler(event, context):
-    for i in event["Records"]:
-        action = i["eventName"]
-        ip = i["requestParameters"]["sourceIPAddress"]
-        bucket_name = i["s3"]["bucket"]["name"]
-        object = i["s3"]["object"]["key"]
+    from src import aws_service
+    lines = aws_service.get_s3_lines(event)
 
-    client = boto3.client("ses")
-    subject = str(action) + "Event from " + bucket_name
-    body = f"""
-        <br>
-        This email is to notify you regarding {action} event.
-        The object {object} is deleted. (second mail)
-        Source IP: {ip} """
-
-    message = {"Subject": {"Data": subject}, "Body":{"Html": {"Data": body}}}
-
-    response = client.send_email(Source = "victor.carrillo.2112@gmail.com",
-        Destination = {"ToAddresses":["vicvlad2112@hotmail.com"]}, Message = message)
-
+    data = transaction_processor.get_transactions(lines)
+    if(valida_transactions(data)):
+        aws_service.send_email(transaction_processor.get_html_summary(data))
+    else:
+        aws_service.send_email(data)
     # TODO implement
     return {
         'statusCode': 200,
-        'body': json.dumps('Hello from Lambda!')
+        'body': json.dumps(lines)
     }
+
+def valida_transactions(transactions):
+    return type(transactions) is dict
+
+def main():
+    local_doc = open("test1.csv")
+    data = transaction_processor.get_transactions(local_doc.readlines())
+    local_doc.close()
+    if(valida_transactions(data)):
+        print(transaction_processor.get_html_summary(data))
+
+if __name__ == '__main__':
+    main()
