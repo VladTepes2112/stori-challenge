@@ -24,7 +24,9 @@ def main():
     data = transaction_processor.get_transactions(local_doc.readlines())
     local_doc.close()
     if(valida_transactions(data)):
-        print(transaction_processor.get_html_summary(data))
+        result = transaction_processor.get_html_summary(data)
+        with open('test1-result.html', 'w') as f:
+            f.write(result)
 
 if __name__ == '__main__':
     main()

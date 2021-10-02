@@ -30,9 +30,14 @@ def get_transactions(lines):
 
 def get_html_summary(transactions):
     months = list(transactions["months"].keys())
-    html_info = f"""Total balance is: {transactions["total"]} \t\t\t\t Average credit amount: {round(transactions["retirement"]["total"] / transactions["retirement"]["n"], 2) if transactions["retirement"]["n"] > 0 else 0}
-Number of transactions in {months[0]}: {transactions["months"][months[0]]}   \t\t Average debit amount: {round(transactions["deposit"]["total"] / transactions["deposit"]["n"], 2) if transactions["deposit"]["n"] > 0 else 0}
-"""
-    html_lines = [f"Number of transactions in {m}: {transactions['months'][m]}\n" for m in months[1:]]
+    sof="""<style>body{background-color: #007784;color: white;font-family: "Lucida Console";font-size: larger;}.body{margin: 0 auto;align: center;}h1{color: #b3f198;font-family: "Lucida Console";}table{border:0;font-size: large;width: 100%; padding:10px}td{padding: 5px;padding-left: 10px;} .right-td{float:right;}</style><div class="body"><h1 style="margin:30px">Stori challenge - by V&iacute;ctor Carrillo</h1>"""
+    body=f"""<p><strong>Transactions summary from file</strong></p><table><tbody>
+        <tr><td>Total balance is {transactions["total"]}</td>   <td class="right-td">Average debit amount: {round(transactions["retirement"]["total"] / transactions["retirement"]["n"], 2) if transactions["retirement"]["n"] > 0 else 0}</td></tr>
+        <tr><td>Number of transactions in {months[0]}: {transactions["months"][months[0]]}</td>     <td class="right-td">Average credit amount: {round(transactions["deposit"]["total"] / transactions["deposit"]["n"], 2) if transactions["deposit"]["n"] > 0 else 0}</td></tr>
+        """
+    eof="</tbody></table></div>"
+    html_info = sof + body
+    html_lines = [f"<tr><td>Number of transactions in {m}: {transactions['months'][m]}</td></tr>" for m in months[1:]]
     html_lines.insert(0, html_info)
+    html_lines.append(eof)
     return "".join(html_lines)
