@@ -8,7 +8,6 @@ def send_email(body):
     response = client.send_email(Source = "victor.carrillo.2112@gmail.com",
         Destination = {"ToAddresses":["vicvlad2112@hotmail.com"]}, Message = message)
 
-
 def get_s3_lines(event):
     i = event["Records"][0]
     bucket_name = i["s3"]["bucket"]["name"]
@@ -19,4 +18,5 @@ def get_s3_lines(event):
     file = data['Body']
 
     file = data['Body'].read().decode().split("\r\n")
+    file.append(object)
     return file

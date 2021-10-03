@@ -1,32 +1,107 @@
 from dateutil import parser
+import mysql.connector
+from mysql.connector import Error
+import base64
+import re
 
-def get_transactions(lines):
+def get_transactions(lines, file_name):
     try:
         if(len(lines) < 2):
             raise Exception("No records found")
-        transactions = {"total": 0.0, "retirement":{"total": 0.0, "n":0}, "deposit":{"total": 0.0, "n":0}, "months":{}}
+        proccessed_transaction = {"total": 0.0, "retirement":{"total": 0.0, "n":0}, "deposit":{"total": 0.0, "n":0}, "months":{}}
+        transactions = []
         for line in lines[1:] :
             if(not line):
                 continue
             transaction = line.replace("\n", "").split(",")
+            # INSERT INTO transaction (transaction_id, account_id, date, transaction) VALUES(1,1, "2021/10/02", 13.5);
             amount = float(transaction[2])
-            transactions["total"] += amount
-            if (amount < 0):
-                transactions["retirement"]["total"] += amount
-                transactions["retirement"]["n"] += 1
-            else:
-                transactions["deposit"]["total"] += amount
-                transactions["deposit"]["n"] += 1
-
             date = parser.parse(transaction[1])
+            transaction_id = int(transaction[0])
+            transactions.append({"transaction_id": transaction_id, "date": date.strftime("%Y/%m/%d"), "transaction": amount})
+
+            proccessed_transaction["total"] += amount
+            if (amount < 0):
+                proccessed_transaction["retirement"]["total"] += amount
+                proccessed_transaction["retirement"]["n"] += 1
+            else:
+                proccessed_transaction["deposit"]["total"] += amount
+                proccessed_transaction["deposit"]["n"] += 1
+
+
             key_month = date.strftime("%B %Y")
-            if(key_month not in transactions["months"]):
-                transactions["months"][key_month] = 0
-            transactions["months"][key_month] += 1
-        return transactions
+            if(key_month not in proccessed_transaction["months"]):
+                proccessed_transaction["months"][key_month] = 0
+            proccessed_transaction["months"][key_month] += 1
+        save_to_database(transactions, get_email_if_exists(file_name))
+        return proccessed_transaction
     except Exception as e:
         return e
 
+def save_to_database(transactions, email):
+    connection = get_connection()
+    if(not connection):
+        print("Can't connect to database, summary will be generated as would, but should not be considered proccessed.")
+        return
+    try:
+        if connection.is_connected():
+            cursor = connection.cursor()
+            # Check if the user exists in the database:
+            email = email if email else "vicvlad2112@hotmail.com"
+            cursor.execute(f'select account_id from account where email = "{email}"')
+            result = cursor.fetchone()
+
+            if (result):
+                account_id = result[0]
+            else:
+                cursor.execute(f'insert into account(email) values("{email}")')
+                result = cursor.lastrowid
+                account_id = result
+            # return
+            for transaction in transactions:
+                try:
+                    insert_transaction = f"""INSERT INTO transaction (transaction_id, account_id, date, transaction)
+                        VALUES({transaction["transaction_id"]},{account_id}, "{transaction["date"]}", {transaction["transaction"]})"""
+                    cursor.execute(insert_transaction)
+                except Error as b:
+                    if("Duplicate entry" in str(b)):
+                        print(f'Transaction {transaction["transaction_id"]} already exists for {email}.')
+                    else:
+                        raise Error(e)
+            cursor.close()
+            connection.commit()
+    except Error as e:
+        print("Error while connecting to MySQL", e)
+        if (connection):
+            connection.rollback()
+    finally:
+        return_connection(connection)
+
+def get_connection():
+    try:
+        return mysql.connector.connect(host='database-1-instance-1.cq2chuy4das5.us-east-2.rds.amazonaws.com',
+                                             database='Stori_challenge',
+                                             user='admin',
+                                             password=base64.b64decode(b'c3RvcmlfY2hhbGxlbmdlX2RiX3Bhc3N3b3Jk').decode("utf-8"))
+
+        # return mysql.connector.connect(host='localhost',
+        #                                      database='Stori_challenge',
+        #                                      user='root',
+        #                                      password='root')
+
+    except Error as e:
+        print("Error while connecting to MySQL")
+
+def return_connection(connection):
+    if (connection and connection.is_connected()):
+        connection.close()
+        print("MySQL connection is closed")
+
+def get_email_if_exists(file_name):
+    regex = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b'
+    email=file_name.replace(".csv", "")
+    if(re.fullmatch(regex, email)):
+        return email
 
 def get_html_summary(transactions):
     months = list(transactions["months"].keys())
