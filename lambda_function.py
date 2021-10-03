@@ -3,7 +3,7 @@ from src import transaction_processor
 
 def lambda_handler(event, context):
     from src import aws_service
-    print("*** Started lambda handler ***")
+    print("*** Started xxxx lambda handler ***")
     lines = aws_service.get_s3_lines(event)
     file_name = lines.pop()
     print("File name:", file_name)
