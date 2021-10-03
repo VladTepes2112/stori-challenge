@@ -36,7 +36,7 @@ def get_transactions(lines, file_name):
                 proccessed_transaction["months"][key_month] = 0
             proccessed_transaction["months"][key_month] += 1
         print("All lines proccessed")
-        save_to_database(transactions, get_email_if_exists(file_name))
+        # save_to_database(transactions, get_email_if_exists(file_name))
         return proccessed_transaction
     except Exception as e:
         return e
