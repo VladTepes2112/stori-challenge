@@ -5,9 +5,9 @@ def lambda_handler(event, context):
     from src import aws_service
     print("*** Started xxxx lambda handler ***")
     lines = aws_service.get_s3_lines(event)
-    file_name = lines.pop()
+    file_name = lines["file_name"]
     print("File name:", file_name)
-    data = transaction_processor.get_transactions(lines, file_name)
+    data = transaction_processor.get_transactions(lines["file"], file_name)
     if(valida_transactions(data)):
         aws_service.send_email(transaction_processor.get_html_summary(data))
     else:
