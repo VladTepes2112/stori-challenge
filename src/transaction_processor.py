@@ -5,14 +5,12 @@ import base64
 import re
 
 def get_transactions(lines, file_name):
-    print("Lines:", lines)
     try:
         if(len(lines) < 2):
             raise Exception("No records found")
         proccessed_transaction = {"total": 0.0, "retirement":{"total": 0.0, "n":0}, "deposit":{"total": 0.0, "n":0}, "months":{}}
         transactions = []
         for line in lines[1:] :
-            print("line:", line)
             if(not line):
                 continue
             transaction = line.replace("\n", "").split(",")
@@ -36,14 +34,12 @@ def get_transactions(lines, file_name):
                 proccessed_transaction["months"][key_month] = 0
             proccessed_transaction["months"][key_month] += 1
         print("All lines proccessed")
-        # save_to_database(transactions, get_email_if_exists(file_name))
+        save_to_database(transactions, get_email_if_exists(file_name))
         return proccessed_transaction
     except Exception as e:
         return e
 
 def save_to_database(transactions, email):
-    print("Saving to database")
-    print(email)
     connection = get_connection()
     if(not connection):
         print("Can't connect to database, summary will be generated as would, but should not be considered proccessed.")
