@@ -19,4 +19,5 @@ def get_s3_lines(event):
 
     file = data['Body'].read().decode().split("\r\n")
     file.append(object)
+    print(object)
     return file

@@ -43,6 +43,7 @@ def get_transactions(lines, file_name):
 
 def save_to_database(transactions, email):
     print("Saving to database")
+    print(email)
     connection = get_connection()
     if(not connection):
         print("Can't connect to database, summary will be generated as would, but should not be considered proccessed.")
@@ -98,7 +99,7 @@ def get_connection():
         #                                      user='root',
         #                                      password='root')
 
-    except Error as e:
+    except Exception as e:
         print("Error while connecting to MySQL")
 
 def return_connection(connection):
