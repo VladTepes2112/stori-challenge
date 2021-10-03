@@ -5,12 +5,14 @@ import base64
 import re
 
 def get_transactions(lines, file_name):
+    print("Lines:", lines)
     try:
         if(len(lines) < 2):
             raise Exception("No records found")
         proccessed_transaction = {"total": 0.0, "retirement":{"total": 0.0, "n":0}, "deposit":{"total": 0.0, "n":0}, "months":{}}
         transactions = []
         for line in lines[1:] :
+            print("line:", line)
             if(not line):
                 continue
             transaction = line.replace("\n", "").split(",")
@@ -33,12 +35,14 @@ def get_transactions(lines, file_name):
             if(key_month not in proccessed_transaction["months"]):
                 proccessed_transaction["months"][key_month] = 0
             proccessed_transaction["months"][key_month] += 1
+        print("All lines proccessed")
         save_to_database(transactions, get_email_if_exists(file_name))
         return proccessed_transaction
     except Exception as e:
         return e
 
 def save_to_database(transactions, email):
+    print("Saving to database")
     connection = get_connection()
     if(not connection):
         print("Can't connect to database, summary will be generated as would, but should not be considered proccessed.")
@@ -50,7 +54,7 @@ def save_to_database(transactions, email):
             email = email if email else "vicvlad2112@hotmail.com"
             cursor.execute(f'select account_id from account where email = "{email}"')
             result = cursor.fetchone()
-
+            print("email:", email)
             if (result):
                 account_id = result[0]
             else:
@@ -58,6 +62,7 @@ def save_to_database(transactions, email):
                 result = cursor.lastrowid
                 account_id = result
             # return
+            print("account_id:", account_id)
             for transaction in transactions:
                 try:
                     insert_transaction = f"""INSERT INTO transaction (transaction_id, account_id, date, transaction)
@@ -70,6 +75,9 @@ def save_to_database(transactions, email):
                         raise Error(e)
             cursor.close()
             connection.commit()
+            print("changes saved to database")
+        else:
+            print("Can't connect to database")
     except Error as e:
         print("Error while connecting to MySQL", e)
         if (connection):
@@ -79,6 +87,7 @@ def save_to_database(transactions, email):
 
 def get_connection():
     try:
+        print("Connecting to database")
         return mysql.connector.connect(host='database-1-instance-1.cq2chuy4das5.us-east-2.rds.amazonaws.com',
                                              database='Stori_challenge',
                                              user='admin',
