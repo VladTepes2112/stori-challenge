@@ -29,12 +29,17 @@ class DBmanager:
         cluster_arn = "arn:aws:rds:us-east-2:477717552241:cluster:stori-challenge-vc"
         secret_arn = "arn:aws:secretsmanager:us-east-2:477717552241:secret:rds-db-credentials/cluster-2MASYVMN4V2RZSXJEK7U2IQIYA/admin-9g8Wid"
         try:
-            return self.db_connector["client"].execute_statement(
+
+            result = self.db_connector["client"].execute_statement(
                 secretArn=secret_arn,
                 database=db_name,
                 resourceArn=cluster_arn,
                 sql=sql
-            )['records']
+            )
+            print(result)
+            if(type(result) is dict and 'records' in result):
+                return result['records']
+            return result
         except Exception as e:
             return str(e)
 
