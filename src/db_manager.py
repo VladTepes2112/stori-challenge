@@ -51,17 +51,17 @@ class DBmanager:
             print("Connected to boto3")
         except Exception as e:
             print("Running in local db.")
-        try:
-            print("Connecting to database")
-            self.db_connector["client"] = mysql.connector.connect(host='database-1-instance-1.cq2chuy4das5.us-east-2.rds.amazonaws.com',
-                                                 database='Stori_challenge',
-                                                 user='admin',
-                                                 password=base64.b64decode(b'c3RvcmlfY2hhbGxlbmdlX2RiX3Bhc3N3b3Jk').decode("utf-8"))
-            self.db_connector["cursor"] = self.db_connector["client"].cursor()
-            self.db_connector["executor"] = self.__execute_local_statement
-            self.db_connector["finishable"] = True
-        except Exception as e:
-            print("Error while connecting to MySQL",e)
+            try:
+                print("Connecting to database")
+                self.db_connector["client"] = mysql.connector.connect(host='database-1-instance-1.cq2chuy4das5.us-east-2.rds.amazonaws.com',
+                                                     database='Stori_challenge',
+                                                     user='admin',
+                                                     password=base64.b64decode(b'c3RvcmlfY2hhbGxlbmdlX2RiX3Bhc3N3b3Jk').decode("utf-8"))
+                self.db_connector["cursor"] = self.db_connector["client"].cursor()
+                self.db_connector["executor"] = self.__execute_local_statement
+                self.db_connector["finishable"] = True
+            except Exception as e:
+                print("Error while connecting to MySQL",e)
 
     def connection_successful(self):
         return self.db_connector["client"] != None
