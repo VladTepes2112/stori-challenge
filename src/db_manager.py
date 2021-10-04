@@ -24,7 +24,7 @@ class DBmanager:
             return self.db_connector["client"].execute_statement(
                 secretArn=secret_arn,
                 database=db_name,
-                sourceArn=cluster_arn,
+                resourceArn=cluster_arn,
                 sql=sql
             )['records']
         except Error as e:
