@@ -37,11 +37,17 @@ def get_transactions(lines):
             for trans in old_trans:
                 #If the transaction pops as an already existing, we don't to attempt to save it again
                 trans_id = str(trans[0])
+                if(type(trans_id) is dict):
+                    trans_id = trans_id["longValue"]
+                    key_month = parser.parse(trans[1]["stringValue"]).strftime("%B %Y")
+                else:
+                    trans_amount = trans[2]
+                    key_month = trans[1].strftime("%B %Y")
                 if(trans_id in new_transactions):
                     new_transactions.pop(trans_id)
                     continue
-                key_month = trans[1].strftime("%B %Y")
-                add_to_transactions_summary(transactions_sumary, trans[2], key_month)
+
+                add_to_transactions_summary(transactions_sumary, trans_amount, key_month)
 
         except Exception as e:
             print("Probably it's going to be different in aurora")
@@ -80,7 +86,7 @@ def save_to_database(db, transactions, email):
 
         # Temporal fix to have polimorfism aurora-rds dbs (should refactor logic-wise in further iterations)
         account_id = result[0][0] if (type(result[0][0]) is int) else result[0][0]['longValue']
-        print(account_id)
+        
         for key in transactions:
             transaction = transactions[key]
             result = db.execute_query(f"""INSERT INTO transaction (transaction_id, account_id, date, transaction)
