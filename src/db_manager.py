@@ -15,7 +15,8 @@ class DBmanager:
     def execute_query(self, sql):
         return self.db_connector["executor"](sql)
 
-    def __execute_rds_statement(self, sql):
+    def __execute_nrds_statement(self, sql):
+        print("Executing query aurora")
         db_name = "stori_db_vc"
         cluster_arn = "arn:aws:rds:us-east-2:477717552241:cluster:stori-challenge-vc"
         secret_arn = "arn:aws:secretsmanager:us-east-2:477717552241:secret:rds-db-credentials/cluster-2MASYVMN4V2RZSXJEK7U2IQIYA/admin-9g8Wid"
@@ -46,8 +47,8 @@ class DBmanager:
         try:
             import boto3
             self.db_connector["client"] = boto3.client('rds-data')
-            self.db_connector["executor"] = self.__execute_rds_statement
-
+            self.db_connector["executor"] = self.__execute_nrds_statement
+            print("Connected to boto3")
         except Exception as e:
             print("Running in local db.")
         try:
