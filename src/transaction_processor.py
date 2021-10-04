@@ -15,7 +15,7 @@ def get_transactions(lines, file_name):
             # INSERT INTO transaction (transaction_id, account_id, date, transaction) VALUES(1,1, "2021/10/02", 13.5);
             amount = float(transaction[2])
             date = parser.parse(transaction[1])
-            transaction_id = int(transaction[0])
+            transaction_id = transaction[0]
             transactions.append({"transaction_id": transaction_id, "date": date.strftime("%Y/%m/%d"), "transaction": amount})
 
             proccessed_transaction["total"] += amount
@@ -44,24 +44,25 @@ def save_to_database(transactions, email):
         return
     else:
         email = email if email else "vicvlad2112@hotmail.com"
-        print("email:", email)
         result = db.execute_query(f'select account_id from account where email = "{email}"')
+        db.execute_query("START TRANSACTION;")
+
         if (len(result) == 0):
             db.execute_query(f'insert into account(email) values("{email}")')
             result = db.execute_query("SELECT LAST_INSERT_ID()")
 
+        # Temporal fix to have polimorfism aurora-rds dbs (should refactor logic-wise in further iterations)
         account_id = result[0][0] if (type(result[0][0]) is int) else result[0][0]['longValue']
 
-        print("account_id:", account_id)
         for transaction in transactions:
-
-            inserted = db.execute_query(f"""INSERT INTO transaction (transaction_id, account_id, date, transaction)
+            result = db.execute_query(f"""INSERT INTO transaction (transaction_id, account_id, date, transaction)
                 VALUES({transaction["transaction_id"]},{account_id}, \"{transaction['date']}\", {transaction["transaction"]})""")
-
-            if(type(inserted) is str and "Duplicate entry" in inserted):
-                print(f'Transaction {transaction["transaction_id"]} already exists for {email}.')
-            elif(type(inserted) is str):
-                print(inserted)
+            if(type(result) is str):
+                print("saves discarded check and fix the file and try again")
+                db.execute_query("ROLLBACK;")
+                db.return_connection()
+                return
+        db.execute_query("COMMIT;")
         print("changes saved to database")
     db.return_connection()
 
