@@ -36,7 +36,7 @@ class DBmanager:
                 resourceArn=cluster_arn,
                 sql=sql
             )
-            print(result)
+            # print(result)
             if(type(result) is dict and 'records' in result):
                 return result['records']
             return result

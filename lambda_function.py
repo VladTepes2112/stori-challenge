@@ -6,7 +6,7 @@ def lambda_handler(event, context):
     print("*** Started xxxx lambda handler ***")
     lines = aws_service.get_s3_lines(event)
     file_name = lines["file_name"]
-    data = transaction_processor.get_transactions(lines["file"], file_name)
+    data = transaction_processor.get_transactions(lines["file"])
     if(valida_transactions(data)):
         aws_service.send_email(transaction_processor.get_html_summary(data))
     else:
@@ -22,7 +22,7 @@ def valida_transactions(transactions):
 
 def main():
     local_doc = open("test1.csv")
-    data = transaction_processor.get_transactions(local_doc.readlines(), "victor.carrillo.2112hotmail.com.csv")
+    data = transaction_processor.get_transactions(local_doc.readlines())
     local_doc.close()
     if(valida_transactions(data)):
         result = transaction_processor.get_html_summary(data)

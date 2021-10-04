@@ -2,15 +2,17 @@ from dateutil import parser
 from src.db_manager import DBmanager
 import re
 
-def get_transactions(lines, file_name):
+def get_transactions(lines):
     try:
         if(len(lines) < 2):
             raise Exception("No records found")
         proccessed_transaction = {"total": 0.0, "retirement":{"total": 0.0, "n":0}, "deposit":{"total": 0.0, "n":0}, "months":{}}
         transactions = []
+        email = None
         for line in lines[1:] :
             if(not line):
                 continue
+            email = get_email_if_exists(file_name)
             transaction = line.replace("\n", "").split(",")
             # INSERT INTO transaction (transaction_id, account_id, date, transaction) VALUES(1,1, "2021/10/02", 13.5);
             amount = float(transaction[2])
@@ -31,7 +33,7 @@ def get_transactions(lines, file_name):
             if(key_month not in proccessed_transaction["months"]):
                 proccessed_transaction["months"][key_month] = 0
             proccessed_transaction["months"][key_month] += 1
-        save_to_database(transactions, get_email_if_exists(file_name))
+        save_to_database(transactions, email)
         print("All lines proccessed")
         return proccessed_transaction
     except Exception as e:
