@@ -9,7 +9,7 @@ class DBmanager:
         self.db_connector = {"executor": None, "finishable": False}
         try:
             self.__stablish_connection()
-        except Error as e:
+        except Exception as e:
             print(e)
 
     def execute_query(self, sql):
@@ -36,8 +36,8 @@ class DBmanager:
                 resourceArn=cluster_arn,
                 sql=sql
             )
-            # print(result)
             if(type(result) is dict and 'records' in result):
+                print("---Was dict and had records")
                 return result['records']
             return result
         except Exception as e:
@@ -80,7 +80,7 @@ class DBmanager:
                 print("Error while connecting to MySQL",e)
 
     def connection_successful(self):
-        return self.db_connector["client"] != None
+        return "client" in self.db_connector and self.db_connector["client"] != None
 
     def return_connection(self):
         if (self.db_connector["finishable"] and self.db_connector["client"] and self.db_connector["client"].is_connected()):
