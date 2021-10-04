@@ -12,7 +12,11 @@ def get_transactions(lines):
         for line in lines[1:] :
             if(not line):
                 continue
-            email = get_email_if_exists(file_name)
+            if (not email):
+                temp_mail = get_email_if_exists(line)
+                if(temp_mail):
+                    email = temp_mail
+                    continue
             transaction = line.replace("\n", "").split(",")
             # INSERT INTO transaction (transaction_id, account_id, date, transaction) VALUES(1,1, "2021/10/02", 13.5);
             amount = float(transaction[2])
@@ -46,6 +50,7 @@ def save_to_database(transactions, email):
         return
     else:
         email = email if email else "vicvlad2112@hotmail.com"
+        print(email)
         result = db.execute_query(f'select account_id from account where email = "{email}"')
         db.execute_query("START TRANSACTION;")
 
@@ -68,9 +73,9 @@ def save_to_database(transactions, email):
         print("changes saved to database")
     db.return_connection()
 
-def get_email_if_exists(file_name):
+def get_email_if_exists(line):
     regex = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b'
-    email=file_name.replace(".csv", "")
+    email=str(line.replace("\n", ""))
     if(re.fullmatch(regex, email)):
         return email
 
