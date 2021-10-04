@@ -27,7 +27,7 @@ class DBmanager:
                 resourceArn=cluster_arn,
                 sql=sql
             )['records']
-        except Error as e:
+        except Exception as e:
             return str(e)
 
     def __execute_local_statement(self, sql):
