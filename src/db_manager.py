@@ -13,10 +13,18 @@ class DBmanager:
             print(e)
 
     def execute_query(self, sql):
-        return self.db_connector["executor"](sql)
+        query_result = self.db_connector["executor"](sql)
+
+        if(type(query_result) is str):
+            if("Duplicate entry" in query_result):
+                print('Element already inserted.', sql.split("VALUES")[1])
+                query_result = True
+            else:
+                print("There was an error with your sentence: ", sql)
+                print("***", query_result)
+        return query_result
 
     def __execute_nrds_statement(self, sql):
-        print("Executing query aurora")
         db_name = "stori_db_vc"
         cluster_arn = "arn:aws:rds:us-east-2:477717552241:cluster:stori-challenge-vc"
         secret_arn = "arn:aws:secretsmanager:us-east-2:477717552241:secret:rds-db-credentials/cluster-2MASYVMN4V2RZSXJEK7U2IQIYA/admin-9g8Wid"
@@ -28,7 +36,6 @@ class DBmanager:
                 sql=sql
             )['records']
         except Exception as e:
-            print(sql)
             return str(e)
 
     def __execute_local_statement(self, sql):
@@ -38,7 +45,6 @@ class DBmanager:
                 cursor = self.db_connector["cursor"]
                 cursor.execute(sql)
                 result = cursor.fetchall()
-                connection.commit()
                 return result
         except Error as e:
             return str(e)
@@ -53,11 +59,15 @@ class DBmanager:
         except Exception as e:
             print("Running in local db.")
             try:
-                print("Connecting to database")
-                self.db_connector["client"] = mysql.connector.connect(host='database-1-instance-1.cq2chuy4das5.us-east-2.rds.amazonaws.com',
-                                                     database='Stori_challenge',
-                                                     user='admin',
-                                                     password=base64.b64decode(b'c3RvcmlfY2hhbGxlbmdlX2RiX3Bhc3N3b3Jk').decode("utf-8"))
+                # self.db_connector["client"] = mysql.connector.connect(host='database-1-instance-1.cq2chuy4das5.us-east-2.rds.amazonaws.com',
+                #                                      database='Stori_challenge',
+                #                                      user='admin',
+                #                                      password=base64.b64decode(b'c3RvcmlfY2hhbGxlbmdlX2RiX3Bhc3N3b3Jk').decode("utf-8"))
+                #
+                self.db_connector["client"] = mysql.connector.connect(host='localhost',
+                                                      database='stori_db_vc',
+                                                      user='root',
+                                                      password="root")
                 self.db_connector["cursor"] = self.db_connector["client"].cursor()
                 self.db_connector["executor"] = self.__execute_local_statement
                 self.db_connector["finishable"] = True
