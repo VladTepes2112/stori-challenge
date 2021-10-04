@@ -22,7 +22,7 @@ def valida_transactions(transactions):
 
 def main():
     local_doc = open("test1.csv")
-    data = transaction_processor.get_transactions(local_doc.readlines(), "victor.carrillo.2112@hotmail.com.csv")
+    data = transaction_processor.get_transactions(local_doc.readlines(), "victor.carrillo.2112hotmail.com.csv")
     local_doc.close()
     if(valida_transactions(data)):
         result = transaction_processor.get_html_summary(data)

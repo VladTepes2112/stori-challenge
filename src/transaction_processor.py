@@ -1,7 +1,5 @@
 from dateutil import parser
-import mysql.connector
-from mysql.connector import Error
-import base64
+from src.db_manager import DBmanager
 import re
 
 def get_transactions(lines, file_name):
@@ -33,75 +31,38 @@ def get_transactions(lines, file_name):
             if(key_month not in proccessed_transaction["months"]):
                 proccessed_transaction["months"][key_month] = 0
             proccessed_transaction["months"][key_month] += 1
-        print("All lines proccessed")
         save_to_database(transactions, get_email_if_exists(file_name))
+        print("All lines proccessed")
         return proccessed_transaction
     except Exception as e:
         return e
 
 def save_to_database(transactions, email):
-    connection = get_connection()
-    if(not connection):
-        print("Can't connect to database, summary will be generated as would, but should not be considered proccessed.")
+    db = DBmanager()
+    if(not db.connection_successful()):
+        print("Can't connect to database.")
         return
-    try:
-        if connection.is_connected():
-            cursor = connection.cursor()
-            # Check if the user exists in the database:
-            email = email if email else "vicvlad2112@hotmail.com"
-            cursor.execute(f'select account_id from account where email = "{email}"')
-            result = cursor.fetchone()
-            print("email:", email)
-            if (result):
-                account_id = result[0]
-            else:
-                cursor.execute(f'insert into account(email) values("{email}")')
-                result = cursor.lastrowid
-                account_id = result
-            # return
-            print("account_id:", account_id)
-            for transaction in transactions:
-                try:
-                    insert_transaction = f"""INSERT INTO transaction (transaction_id, account_id, date, transaction)
-                        VALUES({transaction["transaction_id"]},{account_id}, "{transaction["date"]}", {transaction["transaction"]})"""
-                    cursor.execute(insert_transaction)
-                except Error as b:
-                    if("Duplicate entry" in str(b)):
-                        print(f'Transaction {transaction["transaction_id"]} already exists for {email}.')
-                    else:
-                        raise Error(e)
-            cursor.close()
-            connection.commit()
-            print("changes saved to database")
-        else:
-            print("Can't connect to database")
-    except Error as e:
-        print("Error while connecting to MySQL", e)
-        if (connection):
-            connection.rollback()
-    finally:
-        return_connection(connection)
+    else:
+        email = email if email else "vicvlad2112@hotmail.com"
+        print("email:", email)
+        result = db.execute_query(f'select account_id from account where email = "{email}"')
+        if (len(result) == 0):
+            db.execute_query(f'insert into account(email) values("{email}")')
+            result = db.execute_query("SELECT LAST_INSERT_ID()")
 
-def get_connection():
-    try:
-        print("Connecting to database")
-        return mysql.connector.connect(host='database-1-instance-1.cq2chuy4das5.us-east-2.rds.amazonaws.com',
-                                             database='Stori_challenge',
-                                             user='admin',
-                                             password=base64.b64decode(b'c3RvcmlfY2hhbGxlbmdlX2RiX3Bhc3N3b3Jk').decode("utf-8"))
+        account_id = result[0][0]
 
-        # return mysql.connector.connect(host='localhost',
-        #                                      database='Stori_challenge',
-        #                                      user='root',
-        #                                      password='root')
+        print("account_id:", account_id)
+        for transaction in transactions:
 
-    except Exception as e:
-        print("Error while connecting to MySQL")
+            inserted = db.execute_query(f"""INSERT INTO transaction (transaction_id, account_id, date, transaction)
+                VALUES({transaction["transaction_id"]},{account_id}, "{transaction["date"]}", {transaction["transaction"]})""")
 
-def return_connection(connection):
-    if (connection and connection.is_connected()):
-        connection.close()
-        print("MySQL connection is closed")
+            if(type(inserted) is str and "Duplicate entry" in inserted):
+                print(f'Transaction {transaction["transaction_id"]} already exists for {email}.')
+
+        print("changes saved to database")
+    db.return_connection()
 
 def get_email_if_exists(file_name):
     regex = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b'

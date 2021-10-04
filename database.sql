@@ -1,6 +1,6 @@
-DROP DATABASE IF EXISTS Stori_challenge;
-CREATE database Stori_challenge;
-USE Stori_challenge;
+DROP DATABASE IF EXISTS stori_db_vc;
+CREATE database stori_db_vc;
+USE stori_db_vc;
 
 CREATE TABLE account(
 	   account_id int NOT NULL PRIMARY KEY AUTO_INCREMENT,
