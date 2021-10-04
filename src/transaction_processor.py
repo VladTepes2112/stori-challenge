@@ -50,13 +50,13 @@ def save_to_database(transactions, email):
             db.execute_query(f'insert into account(email) values("{email}")')
             result = db.execute_query("SELECT LAST_INSERT_ID()")
 
-        account_id = result[0][0]
+        account_id = result[0][0] if (type(result[0][0]) is int) else result[0][0]['longValue']
 
         print("account_id:", account_id)
         for transaction in transactions:
 
             inserted = db.execute_query(f"""INSERT INTO transaction (transaction_id, account_id, date, transaction)
-                VALUES({transaction["transaction_id"]},{account_id}, "{transaction["date"]}", {transaction["transaction"]})""")
+                VALUES({transaction["transaction_id"]},{account_id}, \"{transaction['date']}\", {transaction["transaction"]})""")
 
             if(type(inserted) is str and "Duplicate entry" in inserted):
                 print(f'Transaction {transaction["transaction_id"]} already exists for {email}.')

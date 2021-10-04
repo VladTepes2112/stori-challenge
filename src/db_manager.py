@@ -28,6 +28,7 @@ class DBmanager:
                 sql=sql
             )['records']
         except Exception as e:
+            print(sql)
             return str(e)
 
     def __execute_local_statement(self, sql):
