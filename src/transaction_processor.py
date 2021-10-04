@@ -60,7 +60,8 @@ def save_to_database(transactions, email):
 
             if(type(inserted) is str and "Duplicate entry" in inserted):
                 print(f'Transaction {transaction["transaction_id"]} already exists for {email}.')
-
+            elif(type(inserted) is str):
+                print(inserted)
         print("changes saved to database")
     db.return_connection()
 
