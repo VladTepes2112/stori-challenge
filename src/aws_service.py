@@ -5,8 +5,8 @@ def send_email(body):
 
     message = {"Subject": {"Data": subject}, "Body":{"Html": {"Data": body}}}
 
-    response = client.send_email(Source = "victor.carrillo.2112@gmail.com",
-        Destination = {"ToAddresses":["vicvlad2112@hotmail.com"]}, Message = message)
+    response = client.send_email(Source = "vicvlad2112@hotmail.com",
+        Destination = {"ToAddresses":["victor.carrillo.2112@gmail.com"]}, Message = message)
 
 def get_s3_lines(event):
     i = event["Records"][0]

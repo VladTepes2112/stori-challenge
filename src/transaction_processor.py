@@ -120,19 +120,7 @@ def get_email_if_exists(line):
 
 def get_html_summary(transactions):
     cards = "".join([f"""<li>
-        <div class='card'>
-          <img src='https://i.imgur.com/oYiTqum.jpg' class='card__image' alt=''/>
-          <div class='card__overlay'>
-            <div class='card__header'>
-              <svg class='card__arc' xmlns='http://www.w3.org/2000/svg'><path /></svg>
-              <img class='card__thumb' src='https://picsum.photos/200?random={round(random.random()*1000)%25}' alt=''/>
-              <div class='card__header-text'>
-                <h3 class='card__title'>{i}</h3>
-                <span class='card__status'>{transactions['months'][i]} transaction on {i}</span>
-              </div>
-            </div>
-          </div>
-        </div>
+        <h2><img src='https://picsum.photos/200?random={round(random.random()*1000)%25}' class="card__thumb" alt="" />Total transactions in {transactions['months'][i]}:{i} </h2>
       </li>""" for i in transactions["months"]])
     return """<style>
   /* demo shizzle only */
@@ -285,7 +273,7 @@ def get_html_summary(transactions):
     <p><strong>Transactions summary from file</strong><br>
     This message has been sent automatically trough a lambda function</p>
     <table align="center"><tbody>
-    <tr><td>The total balance of the account is: <strong>{transactions["total"]}</strong></td>   <td class="right-td">All time average debit amount: <strong>{round(transactions["retirement"]["total"] / transactions["retirement"]["n"], 2) if transactions["retirement"]["n"] > 0 else 0}</strong></td></tr>
+    <tr><td>The total balance of the account is: <strong>{round(transactions["total"], 2)}</strong></td>   <td class="right-td">All time average debit amount: <strong>{round(transactions["retirement"]["total"] / transactions["retirement"]["n"], 2) if transactions["retirement"]["n"] > 0 else 0}</strong></td></tr>
     <tr><td></td> <td class="right-td">All time average credit amount: <strong>{round(transactions["deposit"]["total"] / transactions["deposit"]["n"], 2) if transactions["deposit"]["n"] > 0 else 0} </strong></td></tr>
     </tbody></table>
 </div>
