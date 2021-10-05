@@ -120,7 +120,7 @@ def get_email_if_exists(line):
 
 def get_html_summary(transactions):
     cards = "".join([f"""<li>
-        <h2><img src='https://picsum.photos/200?random={round(random.random()*1000)%25}' class="card__thumb" alt="" />Total transactions in {transactions['months'][i]}:{i} </h2>
+        <h2><img src='https://picsum.photos/200?random={round(random.random()*1000)%25}' class="card__thumb" alt="" />Total transactions in {i}: <strong>{transactions['months'][i]}</strong> </h2>
       </li>""" for i in transactions["months"]])
     return """<style>
   /* demo shizzle only */
