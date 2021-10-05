@@ -46,6 +46,11 @@ To run the code just call the lambda_function.py
 python lambda_function.py
 ```
 
+You can see a demo of the code working in an aws environment in this drive link:
+https://drive.google.com/drive/folders/10q22aN4MAnfnRMIZ9gO9tFQs4q3tOWys?usp=sharing
+The video shows the flow starting with a pull request being merge and code deployed to lambda.
+There's also an image in the folder showing the mail sent by that run.
+
 if you want to have a local database to save the transactions run the queries in database.sql file
 Or you can also uncomment the db_manager.py and ask me to start the RDS database.
 
