@@ -3,9 +3,10 @@ from src import transaction_processor
 
 def lambda_handler(event, context):
     from src import aws_service
+    print("*** Started xxxx lambda handler ***")
     lines = aws_service.get_s3_lines(event)
-
-    data = transaction_processor.get_transactions(lines)
+    file_name = lines["file_name"]
+    data = transaction_processor.get_transactions(lines["file"])
     if(valida_transactions(data)):
         aws_service.send_email(transaction_processor.get_html_summary(data))
     else:
@@ -24,7 +25,9 @@ def main():
     data = transaction_processor.get_transactions(local_doc.readlines())
     local_doc.close()
     if(valida_transactions(data)):
-        print(transaction_processor.get_html_summary(data))
+        result = transaction_processor.get_html_summary(data)
+        with open('test1-result.html', 'w') as f:
+            f.write(result)
 
 if __name__ == '__main__':
     main()
