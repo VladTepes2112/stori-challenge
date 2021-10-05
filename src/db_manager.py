@@ -37,7 +37,6 @@ class DBmanager:
                 sql=sql
             )
             if(type(result) is dict and 'records' in result):
-                print("---Was dict and had records")
                 return result['records']
             return result
         except Exception as e:

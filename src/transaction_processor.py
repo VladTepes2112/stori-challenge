@@ -1,6 +1,7 @@
 from dateutil import parser
 from src.db_manager import DBmanager
 import re
+import random
 
 def get_transactions(lines):
     try:
@@ -32,7 +33,6 @@ def get_transactions(lines):
 
         print("Getting old transactions")
         old_trans = get_from_database(db, email)
-        print("--- get result", old_trans)
         try:
             for trans in old_trans:
                 # trans in aurora = [{'longValue': 0}, {'stringValue': '2021-07-15'}, {'doubleValue': 60.5}]
@@ -80,7 +80,6 @@ def save_to_database(db, transactions, email):
         return
     else:
         email = email if email else "vicvlad2112@hotmail.com"
-        print(email)
         result = db.execute_query(f'select account_id from account where email = "{email}"')
         db.execute_query("START TRANSACTION;")
 
@@ -120,15 +119,187 @@ def get_email_if_exists(line):
         return email
 
 def get_html_summary(transactions):
-    months = list(transactions["months"].keys())
-    sof="""<style>body{background-color: #007784;color: white;font-family: "Lucida Console";font-size: larger;}.body{margin: 0 auto;align: center;}h1{color: #b3f198;font-family: "Lucida Console";}table{border:0;font-size: large;width: 100%; padding:10px}td{padding: 5px;padding-left: 10px;} .right-td{float:right;}</style><div class="body"><h1 style="margin:30px">Stori challenge - by V&iacute;ctor Carrillo</h1>"""
-    body=f"""<p><strong>Transactions summary from file</strong></p><table><tbody>
-        <tr><td>Total balance is {transactions["total"]}</td>   <td class="right-td">Average debit amount: {round(transactions["retirement"]["total"] / transactions["retirement"]["n"], 2) if transactions["retirement"]["n"] > 0 else 0}</td></tr>
-        <tr><td>Number of transactions in {months[0]}: {transactions["months"][months[0]]}</td>     <td class="right-td">Average credit amount: {round(transactions["deposit"]["total"] / transactions["deposit"]["n"], 2) if transactions["deposit"]["n"] > 0 else 0}</td></tr>
-        """
-    eof="</tbody></table></div>"
-    html_info = sof + body
-    html_lines = [f"<tr><td>Number of transactions in {m}: {transactions['months'][m]}</td></tr>" for m in months[1:]]
-    html_lines.insert(0, html_info)
-    html_lines.append(eof)
-    return "".join(html_lines)
+    cards = "".join([f"""<li>
+        <div class='card'>
+          <img src='https://i.imgur.com/oYiTqum.jpg' class='card__image' alt=''/>
+          <div class='card__overlay'>
+            <div class='card__header'>
+              <svg class='card__arc' xmlns='http://www.w3.org/2000/svg'><path /></svg>
+              <img class='card__thumb' src='https://picsum.photos/200?random={round(random.random()*1000)%25}' alt=''/>
+              <div class='card__header-text'>
+                <h3 class='card__title'>{i}</h3>
+                <span class='card__status'>{transactions['months'][i]} transaction on {i}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </li>""" for i in transactions["months"]])
+    return """<style>
+  /* demo shizzle only */
+  :root {
+    --surface-color: #fff;
+    --curve: 40;
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  body {
+    font-family: 'Noto Sans JP', sans-serif;
+    background-color: #7cd8e2;
+  }
+
+  .cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+    margin: 4rem 5vw;
+    padding: 0;
+    list-style-type: none;
+  }
+
+  .card {
+    position: relative;
+    display: block;
+    height: 50%;
+    border-radius: calc(var(--curve) * 1px);
+    overflow: hidden;
+    text-decoration: none;
+  }
+
+  .card__image {
+    width: 100%;
+    height: auto;
+  }
+
+  .card__overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 1;
+    border-radius: calc(var(--curve) * 1px);
+    background-color: var(--surface-color);
+    transform: translateY(100%);
+    transition: .2s ease-in-out;
+  }
+
+  .card:hover .card__overlay {
+    transform: translateY(0);
+  }
+
+  .card__header {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 2em;
+    padding: 2em;
+    border-radius: calc(var(--curve) * 1px) 0 0 0;
+    background-color: var(--surface-color);
+    transform: translateY(-100%);
+    transition: .2s ease-in-out;
+  }
+
+  .card__arc {
+    width: 80px;
+    height: 80px;
+    position: absolute;
+    bottom: 100%;
+    right: 0;
+    z-index: 1;
+  }
+
+  .card__arc path {
+    fill: var(--surface-color);
+    d: path("M 40 80 c 22 0 40 -22 40 -40 v 40 Z");
+  }
+
+  .card:hover .card__header {
+    transform: translateY(0);
+  }
+
+  .card__thumb {
+    flex-shrink: 0;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+  }
+
+  .card__title {
+    font-size: 1em;
+    margin: 0 0 .3em;
+    color: #6A515E;
+  }
+
+  .card__tagline {
+    display: block;
+    margin: 1em 0;
+    font-family: "MockFlowFont";
+    font-size: .8em;
+    color: #D7BDCA;
+  }
+
+  .card__status {
+    font-size: .8em;
+    color: black;
+  }
+
+  .card__description {
+    padding: 0 2em 2em;
+    margin: 0;
+    color: #D7BDCA;
+    font-family: "MockFlowFont";
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+    overflow: hidden;
+  }
+  .main_content{
+    height: 65%;
+    width: 90%;
+    background-color:#ecfffe;
+    margin-top:3% !important;
+    margin: auto;
+    color: black;
+    border-radius: 25px;
+    text-align:center;
+    font-family: "Lucida Console";
+  }
+  h1{
+    padding-top:2%;
+  }
+  li{
+    height:60%;
+  }
+  table{
+    width: 90%;
+    font-size: xx-large;
+  }
+  td{
+  padding: 42px;
+  }
+</style>""" + f"""
+<div class="main_content" >
+  <h1>Stori challenge - by V&iacute;ctor Carrillo <img src="https://media-exp1.licdn.com/dms/image/C4E0BAQHtxnxSv1F2HQ/company-logo_200_200/0/1562253639430?e=2159024400&v=beta&t=OTPUGauJAaVkkW2Uc1pZS9Qj_AHMCC2nbqt2ttvR6uE" class="card__thumb" alt="" /> </h1>
+    <p><strong>Transactions summary from file</strong><br>
+    This message has been sent automatically trough a lambda function</p>
+    <table align="center"><tbody>
+    <tr><td>The total balance of the account is: <strong>{transactions["total"]}</strong></td>   <td class="right-td">All time average debit amount: <strong>{round(transactions["retirement"]["total"] / transactions["retirement"]["n"], 2) if transactions["retirement"]["n"] > 0 else 0}</strong></td></tr>
+    <tr><td></td> <td class="right-td">All time average credit amount: <strong>{round(transactions["deposit"]["total"] / transactions["deposit"]["n"], 2) if transactions["deposit"]["n"] > 0 else 0} </strong></td></tr>
+    </tbody></table>
+</div>
+<ul class="cards"> {cards} </ul>
+    """
+    # months = list(transactions["months"].keys())
+    # sof="""<style>body{background-color: #007784;color: white;font-family: "Lucida Console";font-size: larger;}.body{margin: 0 auto;align: center;}h1{color: #b3f198;font-family: "Lucida Console";}table{border:0;font-size: large;width: 100%; padding:10px}td{padding: 5px;padding-left: 10px;} .right-td{float:right;}</style><div class="body"><h1 style="margin:30px">Stori challenge - by V&iacute;ctor Carrillo</h1>"""
+    # body=f"""<p><strong>Transactions summary from file</strong></p><table><tbody>
+    #     <tr><td>Total balance is {transactions["total"]}</td>   <td class="right-td">Average debit amount: {round(transactions["retirement"]["total"] / transactions["retirement"]["n"], 2) if transactions["retirement"]["n"] > 0 else 0}</td></tr>
+    #     <tr><td>Number of transactions in {months[0]}: {transactions["months"][months[0]]}</td>     <td class="right-td">Average credit amount: {round(transactions["deposit"]["total"] / transactions["deposit"]["n"], 2) if transactions["deposit"]["n"] > 0 else 0}</td></tr>
+    #     """
+    # eof="</tbody></table></div>"
+    # html_info = sof + body
+    # html_lines = [f"<tr><td>Number of transactions in {m}: {transactions['months'][m]}</td></tr>" for m in months[1:]]
+    # html_lines.insert(0, html_info)
+    # html_lines.append(eof)
+    # return "".join(html_lines)
